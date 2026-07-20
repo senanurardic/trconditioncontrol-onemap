@@ -115,7 +115,7 @@ function animateNodes(timestamp) {
     let currentM_Lng = startM[0]; let currentM_Lat = startM[1];
 
     if (elapsed < PRE_SEQUENCE_DURATION) {
-        // Koreografi Aşamaları (Aynı korundu)
+        // Koreografi Aşamaları
         if (elapsed < 3000) { currentG_Lng = startG[0]; currentG_Lat = startG[1]; } 
         else if (elapsed < 7000) { const p = (elapsed - 3000) / 4000; currentG_Lng = startG[0] + (gStepToMainLng * p); currentG_Lat = startG[1] + (gStepToMainLat * p); } 
         else if (elapsed < 8000) { currentG_Lng = startG[0] + gStepToMainLng; currentG_Lat = startG[1] + gStepToMainLat; }
@@ -148,7 +148,6 @@ function animateNodes(timestamp) {
             const totalSeconds = moveElapsed / 1000;
             const angle = totalSeconds * ORBIT_SPEED_MULTIPLIER;
 
-            // Küçültülmüş yarıçap ve yavaşlatılmış açı ile dairesel hareket
             currentG_Lng = startG[0] + Math.cos(angle) * ORBIT_RADIUS;
             currentG_Lat = startG[1] + Math.sin(angle) * ORBIT_RADIUS;
 
@@ -160,11 +159,15 @@ function animateNodes(timestamp) {
     if (markerInstances["leftNode"]) markerInstances["leftNode"].setLngLat([currentG_Lng, currentG_Lat]);
     if (markerInstances["rightNode"]) markerInstances["rightNode"].setLngLat([currentM_Lng, currentM_Lat]);
 
+    // Toplam süre dolana kadar animasyonu sürdür
     if (elapsed < (PRE_SEQUENCE_DURATION + DELAY_DURATION + MOVE_DURATION)) {
         requestAnimationFrame(animateNodes);
     } else {
+        // GÜNCELLEME: Tüm süre bittiğinde Qualtrics anketini ilerletmesi için üst pencereye sinyal gönderir
         setTimeout(() => {
-            (window.parent || window).postMessage("mapAnimationFinished", "*");
+            if (window.parent) {
+                window.parent.postMessage("mapAnimationFinished", "*");
+            }
         }, 1000); 
     }
 }
